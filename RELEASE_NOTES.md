@@ -1,14 +1,14 @@
-# openclaw-auth-wiper v0.1.0
+# openclaw-auth-wiper v0.1.1
 
-Growthcircle.id release for safe OpenClaw model auth cleanup.
+Growthcircle.id documentation refresh for safe OpenClaw model auth cleanup.
 
 ## Highlights
 
-- Dry-run first workflow for inspecting exactly which files and JSON fields will change.
-- Safe apply mode with lock file, backups, backup manifest, symlink refusal, and atomic JSON writes.
-- Clears local model OAuth/API-key profiles, auth routing state, and custom provider registry.
-- Scrubs session-level model/auth pins without deleting session history or transcripts.
-- Preserves channel config, gateway tokens, memory, tools, plugins, workspaces, logs, and databases.
+- Reworked README with a simpler user-first flow.
+- ClawHub-first install and verification tutorial.
+- Clear dry-run, apply, restart, and login-again sequence.
+- Backup and recovery instructions for manual rollback.
+- Better explanation of what the wiper does and never touches.
 
 ## Compatibility
 

@@ -1,6 +1,6 @@
 {
   "name": "openclaw-auth-wiper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Safe OpenClaw auth and model-state reset plugin by Growthcircle.id.",
   "type": "module",
   "license": "MIT",

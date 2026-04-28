@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1 - 2026-04-28
+
+Documentation release.
+
+- Reworks the README around a clearer user journey.
+- Adds a ClawHub-first install tutorial.
+- Adds clearer dry-run, apply, restart, backup, recovery, and troubleshooting sections.
+- Makes the safety boundaries easier to scan for non-maintainer users.
+
 ## 0.1.0 - 2026-04-28
 
 Initial public release.

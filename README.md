@@ -1,14 +1,28 @@
 # openclaw-auth-wiper
 
-Safe OpenClaw auth and model-state reset plugin by **Growthcircle.id**.
+Safe auth reset for OpenClaw.
 
-`openclaw-auth-wiper` clears broken or stale local model authentication without wiping the rest of OpenClaw. It targets OAuth/API-key model profiles, model routing state, custom provider registries, default/fallback model pins, and session-level model/auth pins. It does not touch channels, gateway tokens, memory, tools, plugins, workspace data, or session transcripts.
+`openclaw-auth-wiper` is a Growthcircle.id plugin for clearing broken or stale OpenClaw model login state without wiping the rest of your OpenClaw setup.
 
-Growthcircle.id is an AI community building practical, current tooling around agents, model providers, and developer automation. This plugin exists for the real troubleshooting moment: a member switches accounts, a provider profile gets stale, or an old session keeps forcing a broken model.
+Use it when OpenClaw keeps using an old account, a model provider token is stale, a custom provider setup is broken, or an old session keeps forcing the wrong model.
 
-## Install
+## What It Does
 
-From ClawHub:
+This plugin cleans only the model/auth layer:
+
+- model OAuth profiles
+- API-key auth profiles
+- model auth routing state
+- cooldown and usage state for model auth
+- custom provider/model registry
+- default and fallback model pins
+- old session-level model/auth overrides
+
+It does not clean your channels, gateway, memory, tools, plugins, workspace, logs, or transcripts.
+
+## Recommended Install: ClawHub
+
+Install the plugin from ClawHub:
 
 ```sh
 openclaw plugins install clawhub:openclaw-auth-wiper
@@ -16,71 +30,120 @@ openclaw plugins enable openclaw-auth-wiper
 openclaw gateway restart
 ```
 
-From npm:
+Check that OpenClaw can see it:
 
 ```sh
-npm install -g openclaw-auth-wiper
+openclaw plugins inspect openclaw-auth-wiper
 ```
 
-Run without global install:
+If your OpenClaw build exposes plugin commands in the command palette or chat command surface, run:
+
+```sh
+auth-wiper --dry-run
+```
+
+For the final wipe, the terminal CLI is the clearest path because it prints a backup report and requires explicit confirmation:
+
+```sh
+npx openclaw-auth-wiper --dry-run
+npx openclaw-auth-wiper --apply --yes
+openclaw gateway restart
+```
+
+After that, sign in or configure your model provider again.
+
+## Quick Tutorial
+
+### 1. Preview First
+
+Always start with a dry run:
 
 ```sh
 npx openclaw-auth-wiper --dry-run
 ```
 
-## Quick Start
+The dry run shows:
 
-Preview first:
+- which files exist
+- which JSON fields will be removed
+- which files are already clean
+- warnings, if any
 
-```sh
-openclaw-auth-wiper --dry-run
-```
+No files are changed in this step.
 
-Apply the wipe:
+### 2. Apply the Wipe
 
-```sh
-openclaw-auth-wiper --apply --yes
-```
-
-Target one agent:
+When the dry-run report looks correct:
 
 ```sh
-openclaw-auth-wiper --agent main --dry-run
-openclaw-auth-wiper --agent main --apply --yes
+npx openclaw-auth-wiper --apply --yes
 ```
 
-Use a custom OpenClaw home:
+Without `--yes`, the CLI asks you to type `WIPE` before writing anything.
 
-```sh
-openclaw-auth-wiper --openclaw-home ~/.openclaw --dry-run
-```
+### 3. Restart OpenClaw
 
-After apply, restart OpenClaw or the gateway, then configure/login again:
+Restart the gateway or OpenClaw process so it reloads the cleaned config:
 
 ```sh
 openclaw gateway restart
 ```
 
-## What Gets Wiped
+### 4. Login Again
+
+Run your normal OpenClaw model setup flow again. For example, configure OpenAI Codex, Growthcircle.id, MiniMax, Ollama, or another provider from a clean state.
+
+## NPM Install
+
+If you prefer a global CLI:
+
+```sh
+npm install -g openclaw-auth-wiper
+openclaw-auth-wiper --dry-run
+openclaw-auth-wiper --apply --yes
+```
+
+You can also use `npx` without installing globally:
+
+```sh
+npx openclaw-auth-wiper --dry-run
+```
+
+## Common Use Cases
+
+Use this plugin when:
+
+- OpenClaw is stuck on the wrong model account.
+- A provider token expired and login keeps failing.
+- You switched from one model provider account to another.
+- A custom provider registry entry is broken.
+- Old sessions keep forcing a bad `modelOverride`, `providerOverride`, or `authProfileOverride`.
+- You want members of a team or community to re-login cleanly without deleting their whole OpenClaw setup.
+
+Do not use it as a remote token revocation tool. It removes local state only. If a credential was leaked, revoke it at the provider too.
+
+## What Gets Cleaned
 
 Per agent:
 
-- `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
-- `~/.openclaw/agents/<agentId>/agent/auth-state.json`
-- `~/.openclaw/agents/<agentId>/agent/models.json`
-- `~/.openclaw/agents/<agentId>/sessions/sessions.json`
+| File | Action |
+| --- | --- |
+| `~/.openclaw/agents/<agentId>/agent/auth-profiles.json` | Clears model OAuth/API-key profiles. |
+| `~/.openclaw/agents/<agentId>/agent/auth-state.json` | Clears model auth routing, cooldown, and usage state. |
+| `~/.openclaw/agents/<agentId>/agent/models.json` | Clears local custom provider/model registry. |
+| `~/.openclaw/agents/<agentId>/sessions/sessions.json` | Removes model/auth override pins only. |
 
-Global config:
+Global config in `~/.openclaw/openclaw.json`:
 
-- `openclaw.json` `auth.profiles`
-- `openclaw.json` `models.providers`
-- `openclaw.json` legacy top-level `providers`
-- `openclaw.json` `agents.defaults.model.primary`
-- `openclaw.json` `agents.defaults.model.fallbacks`
-- `openclaw.json` `agents.defaults.models`
-- `openclaw.json` agent and subagent model pins
+- `auth.profiles`
+- `models.providers`
+- legacy top-level `providers`
+- `agents.defaults.model.primary`
+- `agents.defaults.model.fallbacks`
+- `agents.defaults.models`
+- agent and subagent `model` pins
 
-Session scrub is intentionally narrow. It removes top-level session model/auth pin fields:
+Session fields removed from each session:
 
 - `providerOverride`
 - `providerOverrideSource`
@@ -92,71 +155,126 @@ Session scrub is intentionally narrow. It removes top-level session model/auth p
 - `modelProvider`
 - `model`
 
-Nested session history, transcript files, `origin.provider`, and `systemPromptReport.model` are preserved.
+Nested session history and transcript references are preserved.
 
-## What It Never Touches
+## What Is Never Touched
 
 The default wipe does not edit or delete:
 
 - Telegram, WhatsApp, Discord, or other channel config
-- gateway port, bind address, and gateway token
+- gateway token, gateway port, or bind address
 - workspace files
 - memory
-- tools, elevated execution, or sandbox policy
-- plugin installs and plugin allowlists
-- session history/transcripts
+- tools and elevated execution settings
+- plugin install state and plugin allowlists
+- session transcript files
 - logs, media, flows, task databases, identity, devices, or credentials directories
 
-## Safety Model
+## Backups and Recovery
+
+Before changing anything, the CLI backs up every file it will edit.
+
+Backup location:
+
+```text
+~/.openclaw/.auth-wiper-backups/<timestamp>/
+```
+
+Each backup folder contains:
+
+- copied JSON files
+- `manifest.json`
+- file size, mode, mtime, and SHA-256 hashes
+
+To recover manually, copy the backed-up file back to its original path, then restart OpenClaw.
+
+Example:
+
+```sh
+cp ~/.openclaw/.auth-wiper-backups/<timestamp>/openclaw.json ~/.openclaw/openclaw.json
+openclaw gateway restart
+```
+
+## Safety Defaults
+
+`openclaw-auth-wiper` is intentionally conservative:
 
 - Default mode is `--dry-run`.
-- Apply requires `--apply` and either interactive `WIPE` confirmation or `--yes`.
-- Existing files are backed up before writes.
-- Backups are stored under `~/.openclaw/.auth-wiper-backups/<timestamp>/` with `0700` directories and `0600` metadata where possible.
-- JSON files are rewritten atomically through a temporary file and rename.
+- Secret values are never printed.
+- Changed files are backed up first.
+- JSON writes are atomic.
 - A lock file prevents concurrent wipes.
 - Symlink targets are refused.
-- Reports list paths and JSON fields only. Secret values are never printed.
+- Only known OpenClaw auth/model paths are targeted.
 
-## CLI Options
+## CLI Reference
 
 | Option | Description |
 | --- | --- |
 | `--dry-run` | Preview changes only. This is the default. |
 | `--apply` | Write the wipe. |
-| `--yes`, `-y` | Skip interactive confirmation for `--apply`. |
+| `--yes`, `-y` | Skip the interactive `WIPE` confirmation. |
 | `--openclaw-home <path>` | OpenClaw home. Defaults to `OPENCLAW_HOME` or `~/.openclaw`. |
 | `--agent <id>` | Limit to one agent. Repeatable. |
 | `--all-agents` | Target every agent directory. This is the default. |
 | `--backup-dir <path>` | Override backup destination. |
 | `--preserve-session-model-history` | Keep top-level session `model` and `modelProvider`, while still removing override pins. |
-| `--no-lock` | Disable lock file. Useful only for isolated test fixtures. |
+| `--no-lock` | Disable lock file. Use only for isolated test fixtures. |
 | `--json` | Print a machine-readable report. |
 | `--version` | Print package version. |
 | `--help` | Print help. |
 
-## OpenClaw Plugin
+## Troubleshooting
 
-The package ships with `openclaw.plugin.json` and an extension entrypoint at `dist/index.js`. It avoids modern SDK-only imports so the plugin can load across OpenClaw `2026.3.*` through the latest `2026.4.*` line.
+### OpenClaw still uses the old model
 
-The plugin registers:
+Restart the gateway after applying the wipe:
 
-- `auth-wiper` command for preview/apply workflows
-- `openclaw_auth_wiper_preview` tool for dry-run inspection only
+```sh
+openclaw gateway restart
+```
 
-The CLI remains the recommended path for destructive apply because it provides a direct confirmation and backup report.
+Then configure/login again.
+
+### Dry run says everything is missing
+
+Check that OpenClaw is using the expected home directory:
+
+```sh
+npx openclaw-auth-wiper --openclaw-home ~/.openclaw --dry-run
+```
+
+If you use a custom OpenClaw home, pass that path with `--openclaw-home`.
+
+### You only want to clean one agent
+
+```sh
+npx openclaw-auth-wiper --agent main --dry-run
+npx openclaw-auth-wiper --agent main --apply --yes
+```
+
+### You want session history to keep `model` and `modelProvider`
+
+```sh
+npx openclaw-auth-wiper --preserve-session-model-history --dry-run
+npx openclaw-auth-wiper --preserve-session-model-history --apply --yes
+```
+
+This still removes override pins such as `modelOverride`, `providerOverride`, and `authProfileOverride`.
 
 ## Compatibility
 
-| Component | Policy |
+| Component | Support |
 | --- | --- |
-| OpenClaw | Designed for `2026.3.*` through latest; tested locally with `2026.4.24` and checked against npm latest `2026.4.26`. |
+| OpenClaw | Designed for `2026.3.*` through latest `2026.4.*`. |
+| Tested OpenClaw | `2026.4.24`, checked against npm latest `2026.4.26`. |
 | Node.js | `>=20` |
-| Platforms | Linux and macOS. Windows should work for JSON transforms, but symlink and file-mode behavior may differ. |
-| Package managers | npm and npx |
-| Distribution | npm, GitHub Releases, ClawHub |
+| Platforms | Linux and macOS. Windows should work for JSON transforms, but file mode behavior may differ. |
+| Distribution | ClawHub, npm, GitHub Releases |
 
-## Development
+## For Maintainers
+
+Development:
 
 ```sh
 npm install
@@ -166,40 +284,30 @@ npm run build
 npm pack --dry-run
 ```
 
-Local CLI test against a fixture:
-
-```sh
-openclaw-auth-wiper --openclaw-home /path/to/fixture --dry-run --json
-```
-
-## Release
-
-Automated publishing is handled by `.github/workflows/release.yml` on `v*` tags:
-
-- npm publish with `NPM_TOKEN`
-- GitHub release provenance from the tag
-- ClawHub publish with the `clawhub` CLI and `CLAWHUB_TOKEN` environment, when available
-
-Manual release checklist:
+Release checklist:
 
 ```sh
 npm run prepublishOnly
-npm pack --dry-run
 npm publish --access public
-git tag -a v0.1.0 -m "openclaw-auth-wiper 0.1.0"
-git push origin main v0.1.0
-gh release create v0.1.0 --title "openclaw-auth-wiper v0.1.0" --notes-file RELEASE_NOTES.md
+git tag -a vX.Y.Z -m "openclaw-auth-wiper X.Y.Z"
+git push origin main vX.Y.Z
 clawhub package publish "$PWD" \
   --family code-plugin \
-  --version 0.1.0 \
+  --version X.Y.Z \
   --source-repo Growth-Circle/openclaw-auth-wiper \
   --source-commit "$(git rev-parse HEAD)" \
-  --source-ref v0.1.0 \
+  --source-ref vX.Y.Z \
   --tags latest
 ```
 
+## About Growthcircle.id
+
+Growthcircle.id is an AI community focused on practical, current AI workflows: agent tooling, model provider integration, automation, and applied AI systems.
+
+This plugin is part of that tooling culture: small, specific, safe utilities that help people recover faster and work cleaner.
+
 ## Security
 
-This is a local cleanup utility, not a remote token revocation tool. It removes local OpenClaw auth/model state only. If a credential was exposed, revoke it at the provider as well.
+This utility removes local OpenClaw auth/model state. It does not revoke remote provider tokens or invalidate server-side sessions.
 
-Please report security issues privately to the Growthcircle.id maintainers rather than opening a public issue with sensitive details.
+If a secret was exposed, revoke it at the provider. If you need to report a security issue in this package, contact the maintainers privately instead of opening a public issue with sensitive details.

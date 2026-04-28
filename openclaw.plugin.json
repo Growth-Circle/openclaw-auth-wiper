@@ -1,7 +1,7 @@
 {
   "id": "openclaw-auth-wiper",
   "name": "OpenClaw Auth Wiper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Growthcircle.id utility for safely wiping OpenClaw model auth, routing state, and custom provider registry without touching channels, gateway, memory, tools, or transcripts.",
   "extensions": ["./dist/index.js"],
   "compat": {
