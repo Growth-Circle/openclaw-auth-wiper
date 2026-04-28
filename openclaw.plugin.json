@@ -1,0 +1,27 @@
+{
+  "id": "openclaw-auth-wiper",
+  "name": "OpenClaw Auth Wiper",
+  "version": "0.1.0",
+  "description": "Growthcircle.id utility for safely wiping OpenClaw model auth, routing state, and custom provider registry without touching channels, gateway, memory, tools, or transcripts.",
+  "extensions": ["./dist/index.js"],
+  "compat": {
+    "pluginApi": ">=2026.3.0",
+    "testedOpenClaw": ["2026.4.24", "2026.4.26"]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "openClawHome": {
+        "type": "string",
+        "description": "Optional OpenClaw home directory. Defaults to OPENCLAW_HOME or ~/.openclaw."
+      }
+    }
+  },
+  "commands": [
+    {
+      "name": "auth-wiper",
+      "description": "Preview or apply a safe wipe of local model auth state."
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "name": "openclaw-auth-wiper",
+  "version": "0.1.0",
+  "description": "Safe OpenClaw auth and model-state reset plugin by Growthcircle.id.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Growthcircle.id",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Growth-Circle/openclaw-auth-wiper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Growth-Circle/openclaw-auth-wiper/issues"
+  },
+  "homepage": "https://github.com/Growth-Circle/openclaw-auth-wiper#readme",
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "auth",
+    "oauth",
+    "models",
+    "growthcircle"
+  ],
+  "bin": {
+    "openclaw-auth-wiper": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./wiper": {
+      "types": "./dist/wiper.d.ts",
+      "default": "./dist/wiper.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "AGENTS.md",
+    "openclaw.plugin.json",
+    ".clawhubignore"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "pack:dry-run": "npm pack --dry-run",
+    "publish:clawhub": "clawhub package publish \"$PWD\" --family code-plugin --version \"$npm_package_version\" --source-repo Growth-Circle/openclaw-auth-wiper --source-commit \"$(git rev-parse HEAD)\" --source-ref \"v$npm_package_version\" --tags latest",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run check && npm test && npm run build"
+  },
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.3.0",
+      "testedOpenClaw": [
+        "2026.4.24",
+        "2026.4.26"
+      ]
+    },
+    "distribution": {
+      "npm": "openclaw-auth-wiper",
+      "clawhub": "openclaw-auth-wiper"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

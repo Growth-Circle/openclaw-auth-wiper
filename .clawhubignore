@@ -1,0 +1,9 @@
+.clawhubignore
+.git/
+.github/
+node_modules/
+coverage/
+*.tgz
+*.tar.gz
+test/
+dist/**/*.map
