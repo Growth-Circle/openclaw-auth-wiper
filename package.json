@@ -67,6 +67,10 @@
         "2026.4.26"
       ]
     },
+    "build": {
+      "openclawVersion": "2026.4.26",
+      "pluginSdkVersion": "2026.4.26"
+    },
     "distribution": {
       "npm": "openclaw-auth-wiper",
       "clawhub": "openclaw-auth-wiper"
