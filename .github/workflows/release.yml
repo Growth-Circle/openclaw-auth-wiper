@@ -32,6 +32,10 @@ jobs:
             echo "NPM_TOKEN is not configured; skipping npm publish."
             exit 0
           fi
+          if npm view "openclaw-auth-wiper@${GITHUB_REF_NAME#v}" version >/dev/null 2>&1; then
+            echo "openclaw-auth-wiper@${GITHUB_REF_NAME#v} is already published; skipping npm publish."
+            exit 0
+          fi
           npm publish --access public
       - name: Create GitHub release
         env:
@@ -50,6 +54,7 @@ jobs:
             exit 0
           fi
           npm install -g clawhub@^0.11.0
+          clawhub login --token "$CLAWHUB_TOKEN" --no-browser
           clawhub package publish "$PWD" \
             --family code-plugin \
             --version "${GITHUB_REF_NAME#v}" \
